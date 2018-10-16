@@ -3,20 +3,21 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofToggleFullscreen();
+    ofEnableBlendMode(OF_BLENDMODE_ALPHA);
     ofBackground(0);
     
-    ofColor meanColor = ofColor(200, 0, 50, 125);
-    
-    float hue = 0, sat = 0, bri = 0;
-    meanColor.getHsb(hue, sat, bri);
+    ofColor meanColor = ofColor(255, 0, 0, 125);
+    ofColor lineColor = ofColor(255);
     
     width = int(ofGetHeight()/GRIDHEIGHT);
     for (int i = 0; i < GRIDHEIGHT; i++){
         for (int j = 0; j < GRIDWIDTH; j++){
             int k = int(i*GRIDWIDTH + j);
-            grids[k] = ofVec3f(width*(j - GRIDWIDTH/2), width*(i - GRIDHEIGHT/2), 0);
-            firstColors[k] = ofColor::fromHsb(hue, sat, bri + rand()%50 - 50, 125);
-            depths[k] = sin(M_PI/100*k);
+            ofVec3f gridPos = ofVec3f(width*(j - GRIDWIDTH/2), width*(i - GRIDHEIGHT/2), 0);
+            colorGrids[k] = ColorGrid(width, 10, meanColor, lineColor, gridPos);
+            colorGrids[k].initRandomizedColor(0, 0, 0);
+            colorGrids[k].initColorSine(0, 3);
+            colorGrids[k].initDepthSine(20, rand()%2+1);
         }
     }
 }
@@ -26,10 +27,11 @@ void ofApp::update(){
     for (int i = 0; i < GRIDHEIGHT; i++){
         for (int j = 0; j < GRIDWIDTH; j++){
             int k = int(i*GRIDWIDTH + j);
-            float hue = 0, sat = 0, bri = 0;
-            firstColors[k].getHsb(hue, sat, bri);
-            colors[k] = ofColor::fromHsb(hue, sat, bri + 20*sin(M_PI*2/3*ofGetElapsedTimef()), 125);
-            depths[k] = sin(M_PI/100*k + ofGetElapsedTimef()/10000);
+            colorGrids[k].updateColor();
+            colorGrids[k].updateDepth();
+            if (mousePointedPos.x == j and mousePointedPos.y == i) {
+                colorGrids[k].mousePointed(80);
+            }
         }
     }
 }
@@ -41,18 +43,8 @@ void ofApp::draw(){
     for (int i = 0; i < GRIDHEIGHT; i++){
         for (int j = 0; j < GRIDWIDTH; j++){
             int k = int(i*GRIDWIDTH + j);
-            float depth = depths[k];
-
-            ofNoFill();
-            ofSetColor(ofColor::white);
-            ofSetLineWidth(2);
-            ofDrawBox(grids[k], width, width, depth);
-            
-            ofDrawBitmapString(ofToString(i) + ", " + ofToString(j), grids[k].x-width/2 + 10, grids[k].y);
-
-            ofFill();
-            ofSetColor(colors[k]);
-            ofDrawBox(grids[k], width, width, depth);
+            ofDrawBitmapString(ofToString(i) + ", " + ofToString(j), colorGrids[k].getPosition().x-width/2 + 10, colorGrids[k].getPosition().y);
+            colorGrids[k].draw();
         }
     }
 }
@@ -76,8 +68,12 @@ void ofApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-
-}
+    int w = floor((x - ofGetWidth()/2)/float(width) + GRIDWIDTH/2.0);
+    int h = floor((y - ofGetHeight()/2)/float(width) + GRIDHEIGHT/2.0);
+    mousePointedPos.x = (0 <= w and w < GRIDWIDTH) ? w : -1;
+    mousePointedPos.y = (0 <= h and h < GRIDHEIGHT) ? h : -1;
+    cout << "mouse position: " << mousePointedPos.y << ", " << mousePointedPos.x << endl;
+ }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
