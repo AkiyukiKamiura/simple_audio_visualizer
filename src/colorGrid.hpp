@@ -14,6 +14,7 @@
 class ColorGrid {
 private:
     float width;
+    float basicDepth;
     float mainDepth;
     float drawDepth;
     float depthChangedTimef;
@@ -25,10 +26,12 @@ private:
     float colorAmplitude;
     float depthPeriod;
     float depthAmplitude;
+    
 public:
     ColorGrid(){};
     ColorGrid(float width, float depth, ofColor mainColor, ofColor lineColor, ofVec3f position) {
         this->width = width;
+        this->basicDepth = depth;
         this->mainDepth = depth;
         this->drawDepth = depth;
         this->mainColor = mainColor;
@@ -39,9 +42,12 @@ public:
     void initColorSine(float amplitude, float period);
     void initDepthSine(float amplitude, float period);
     void updateDepth();
+    void returnToBasicDepth();
     void updateColor();
     void draw();
-    void mousePointed(float depthAddition);
+    void addDepth(float depthAddition);
+    void propagate(ColorGrid grid);
+    float getDepthDiff();
     ofVec3f getPosition();
 };
 

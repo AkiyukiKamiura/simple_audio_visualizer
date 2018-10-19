@@ -3,9 +3,11 @@
 #include "ofMain.h"
 #include "colorGrid.hpp"
 #include <math.h>
+#include "ofxOpenCv.h"
+#include "ofxEasyFft.h"
 
 #define GRIDHEIGHT 15 // 奇数
-#define GRIDWIDTH 25  // 1.6倍以上, 奇数
+#define GRIDWIDTH 25 // 1.6倍以上, 奇数
 
 class ofApp : public ofBaseApp{
 public:
@@ -24,18 +26,18 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-		
+    void audioIn(float* input, int bufferSize, int nChannels);
     
 private:
     bool isPlaying = false;
-    int width;
-    ofVec3f grids[GRIDHEIGHT*GRIDWIDTH];
-    ofColor colors[GRIDHEIGHT*GRIDWIDTH];
-    float depths[GRIDHEIGHT*GRIDWIDTH];
-    ofColor firstColors[GRIDHEIGHT*GRIDWIDTH];
-    int colorDev = 80;
-    
+    float gridWidth; 
+    int windowWidth;
+    int windowHeight;
     ColorGrid colorGrids[GRIDHEIGHT*GRIDWIDTH];
-    
     ofVec2f mousePointedPos = ofVec2f(-1, -1);
+    
+    int plotHeight, bufferSize;
+    ofxFft* fft;
+    ofMutex soundMutex;
+    vector<float> drawBins, middleBins, audioBins;
 };

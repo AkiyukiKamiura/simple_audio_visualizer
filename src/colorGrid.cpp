@@ -38,15 +38,26 @@ void ColorGrid::updateColor(){
 }
 
 void ColorGrid::updateDepth(){
-    this->drawDepth = (this->drawDepth*4 + this->mainDepth)/5;
-    if (this->drawDepth - this->mainDepth <= 5) {
-        this->drawDepth = this->mainDepth;
+    // mainDepth の処理
+    if (this->mainDepth - this->basicDepth > 0) {
+        this->returnToBasicDepth();
+    }
+    
+    // TODO: 深さの変動処理
+    // とりあえず今は mainDepth = drawDepth
+    this->drawDepth = this->mainDepth;
+}
+
+void ColorGrid::returnToBasicDepth(){
+    this->mainDepth = (this->mainDepth*9 + this->basicDepth)/10;
+    if (this->mainDepth - this->basicDepth <= 5) {
+        this->mainDepth = this->basicDepth;
     }
 }
 
-void ColorGrid::mousePointed(float depthAddition) {
+void ColorGrid::addDepth(float depthAddition) {
     depthChangedTimef = ofGetElapsedTimef();
-    this->drawDepth = this->mainDepth + depthAddition;
+    this->mainDepth = this->basicDepth + depthAddition;
 }
 
 void ColorGrid::draw(){
@@ -58,6 +69,14 @@ void ColorGrid::draw(){
     ofFill();
     ofSetColor(this->drawColor);
     ofDrawBox(this->position, this->width, this->width, this->drawDepth);
+}
+
+void ColorGrid::propagate(ColorGrid grid){
+    grid.addDepth(this->drawDepth/5);
+}
+
+float ColorGrid::getDepthDiff(){
+    return this->drawDepth - this->basicDepth;
 }
 
 ofVec3f ColorGrid::getPosition() {
